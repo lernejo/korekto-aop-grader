@@ -1,0 +1,6 @@
+<configuration>
+    <include resource="logback/korekto-base.xml"/>
+
+    <logger name="org.codehaus" level="ERROR" />
+    <logger name="org.apache" level="WARN" />
+</configuration>
