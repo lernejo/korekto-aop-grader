@@ -1,0 +1,153 @@
+= Construction d'une librairie d'utilitaires utilisant l'AOP
+:tip-caption: 💡
+:note-caption: ℹ️
+:warning-caption: ⚠️
+:icons: font
+:hardbreaks-option:
+
+Préfixé par ✔️, des "checkpoints" pour vous aider à vérifier que vous avez tout bon.
+
+== Objectif
+
+Utiliser la programmation orientée aspect (**A**spect **O**riented **P**rogrammation) pour construire une bibliothèque d'utilitaires réutilisables.
+
+== Prérequis
+
+* Git
+* Java 21
+* Maven 3.9.x
+* (Optionnel, mais fortement recommandé) IntelliJ edition _community_ 2024
+
+'''
+
+* Sur la page du template https://github.com/lernejo/maven-starter-template, cliquer sur "Use this template"
+* ⚠️ Renseigner comme nom de dépôt : *java_aop_training*
+* Marquer le futur dépôt comme *private*
+* Une fois le dépôt créé, installer l'app https://github.com/apps/korekto[Korekto], ou mettre à jour sa configuration afin qu'elle ait accès à ce nouveau dépôt
+* Cloner le dépôt en utilisant l'*url SSH*
+* La branche par défaut est la branche `main`, vous êtes libre de faire des https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request[Pull Requests], mais seule la branche `main` sera corrigée.
+
+== Partie 1 - Dynamic Proxy
+
+Dans un premier temps, nous allons créer une implémentation d'une fonction de réessaie utilisant un proxy dynamique.
+
+Le but étant de créer une instance qui supportera un certain nombre d'erreur pour les méthodes correctement annotées.
+
+
+* Créer une nouvelle annotation `fr.lernejo.aop.Retry`
+* Cette annotation aura deux paramètres :
+** `maxTries` de type `int` et de valeur par défaut `1`
+** `errorTypes` de type `Class<? extends Exception>[]`
+* Dans le répertoire de test, créer une classe `fr.lernejo.aop.FallibleApi`
+* ✔️ Vérifier que l'annotation est utilisable sur une méthode et uniquement sur une méthode, en annotant une méthode de cette dernière classe
+
+* Créer une classe `fr.lernejo.aop.RetryableFactory`
+* Y ajouter une méthode publique statique `buildRetryable` prenant en paramètre un paramètre de type `Class<T>` (générique) et retournera une instance de type `T` (générique)
+* Cette instance sera créée grâce à `javassist.util.proxy.ProxyFactory`
+* Les implémentations de `javassist.util.proxy.MethodFilter` et `javassist.util.proxy.MethodHandler` seront dans des classes à créer dans le même package
+* Implémenter `javassist.util.proxy.MethodFilter` de manière à ce que seule les méthodes publiques annotées avec `@Retry` soient considérées
+* Implémenter `javassist.util.proxy.MethodHandler` de manière à ce qu'un appel de méthode soit répétée maximum `maxErrorCount` en cas d'erreur
+* Si `errorTypes` est vide, déclencher le mécanisme sur `java.lang.Exception` et toutes ses sous-classes
+* Sinon déclencher le mécanisme uniquement sur les types spécifiés ainsi que tous leurs sous-types
+* Si la méthode déléguée sort en erreur alors que le mécanisme est dans la dernière boucle de rééssaie, lancer la dernière erreur obtenue
+* Ces différents cas doivent être testés avec des tests unitaires, en profitant de la classe `fr.lernejo.aop.FallibleApi` comme implémentation de test pour décrire les différents cas possibles
+* ✔️ Vérifier que 100% de votre code est testé
+
+
+
+
+== Partie 2
+
+Lire un fichier de données au format CSV, et réaliser un calcul simple.
+
+* Créer une nouvelle classe `fr.lernejo.file.CsvReader`
+* Créer une fonction `main` de telle sorte que :
+** Le programme prent ces paramètres :
+*** Un chemin vers un fichier (CSV)
+*** Une date de début au format `YYYY-MM-dd` (inclue)
+*** Une date de fin (exclue)
+*** Un nom de métrique parmi
+**** `temperature_2m` pour température (2ᵉ colonne)
+**** `pressure_msl` pour la pression (4ᵉ colonne)
+**** `wind_speed_10m` pour la vitesse du vent (6ᵉ colonne)
+**** `direct_normal_irradiance_instant` pour l'irradiance (9ᵉ colonne)
+*** Un sélecteur : `NIGHT` ou `DAY`
+*** Un type d'agrégation : `SUM`, `AVG`, `MIN`, `MAX`
+** Le programme affiche la valeur calculée suivie de son unité et sort
+
+Le fichier CSV en entrée sera toujours structuré de la même manière à savoir :
+
+* 3 lignes de préambule
+* 1 ligne d'entêtes (avec nom des métriques et unités)
+* N lignes de données
+* Les colonnes seront toujours les mêmes, et dans le même ordre.
+
+Exemple de fichier CSV :
+
+[source,csv]
+----
+latitude,longitude,elevation,utc_offset_seconds,timezone,timezone_abbreviation
+52.54833,13.407822,38.0,0,GMT,GMT
+
+time,temperature_2m (°C),rain (mm),pressure_msl (hPa),cloud_cover (%),wind_speed_10m (km/h),soil_temperature_0_to_7cm (°C),is_day (),direct_normal_irradiance_instant (W/m²)
+2010-01-01T00:00,-2.6,0.00,996.9,100,16.0,-0.6,0,0.0
+2010-01-01T01:00,-2.7,0.00,996.4,100,16.3,-0.6,0,0.0
+2010-01-01T02:00,-2.7,0.00,996.2,100,16.3,-0.6,0,0.0
+2010-01-01T03:00,-2.7,0.00,996.1,100,15.4,-0.6,0,0.0
+2010-01-01T04:00,-2.7,0.00,996.0,100,14.8,-0.6,0,0.0
+2010-01-01T05:00,-2.7,0.00,996.1,100,14.8,-0.6,0,0.0
+2010-01-01T06:00,-2.8,0.00,996.1,100,15.0,-0.6,0,0.0
+2010-01-01T07:00,-2.7,0.00,996.3,100,14.3,-0.6,0,0.0
+2010-01-01T08:00,-2.7,0.00,996.7,100,13.8,-0.6,1,0.0
+2010-01-01T09:00,-2.4,0.00,997.2,100,13.7,-0.6,1,8.5
+2010-01-01T10:00,-2.2,0.00,997.2,100,13.2,-0.6,1,20.4
+2010-01-01T11:00,-2.0,0.00,997.3,100,13.8,-0.6,1,50.0
+2010-01-01T12:00,-1.7,0.00,997.6,100,14.0,-0.6,1,44.7
+2010-01-01T13:00,-1.6,0.00,997.6,100,14.3,-0.6,1,27.9
+2010-01-01T14:00,-1.7,0.00,998.1,100,12.8,-0.6,1,33.9
+2010-01-01T15:00,-2.1,0.00,999.1,100,10.5,-0.6,1,0.0
+2010-01-01T16:00,-2.5,0.00,999.6,100,10.6,-0.6,0,0.0
+2010-01-01T17:00,-2.8,0.00,999.9,100,10.8,-0.6,0,0.0
+2010-01-01T18:00,-3.2,0.00,1000.4,100,10.3,-0.6,0,0.0
+2010-01-01T19:00,-2.9,0.00,1001.1,100,10.5,-0.6,0,0.0
+2010-01-01T20:00,-3.0,0.00,1001.8,100,10.0,-0.6,0,0.0
+2010-01-01T21:00,-2.9,0.00,1002.3,100,9.5,-0.6,0,0.0
+2010-01-01T22:00,-2.9,0.00,1002.9,100,11.0,-0.5,0,0.0
+2010-01-01T23:00,-2.9,0.00,1003.4,100,8.7,-0.5,0,0.0
+2010-01-02T00:00,-3.0,0.00,1004.0,100,8.3,-0.5,0,0.0
+2010-01-02T01:00,-3.2,0.00,1004.5,100,9.1,-0.5,0,0.0
+2010-01-02T02:00,-3.4,0.00,1005.2,100,10.1,-0.5,0,0.0
+2010-01-02T03:00,-3.5,0.00,1005.6,93,11.2,-0.5,0,0.0
+2010-01-02T04:00,-3.7,0.00,1006.2,94,11.2,-0.5,0,0.0
+2010-01-02T05:00,-3.8,0.00,1007.2,99,10.9,-0.5,0,0.0
+2010-01-02T06:00,-3.8,0.00,1008.0,97,10.0,-0.5,0,0.0
+2010-01-02T07:00,-3.6,0.00,1008.9,72,10.0,-0.5,0,0.0
+2010-01-02T08:00,-3.6,0.00,1009.8,62,10.5,-0.5,1,0.0
+2010-01-02T09:00,-3.2,0.00,1010.6,64,11.0,-0.5,1,16.9
+2010-01-02T10:00,-2.7,0.00,1011.4,92,11.6,-0.5,1,25.4
+2010-01-02T11:00,-1.9,0.00,1012.0,100,10.9,-0.5,1,82.9
+2010-01-02T12:00,-1.4,0.00,1012.7,100,11.2,-0.5,1,84.7
+2010-01-02T13:00,-1.2,0.00,1013.5,100,14.3,-0.5,1,69.3
+2010-01-02T14:00,-1.4,0.00,1014.1,100,15.8,-0.5,1,73.5
+2010-01-02T15:00,-1.9,0.00,1015.2,93,15.0,-0.5,1,0.0
+2010-01-02T16:00,-2.0,0.00,1016.0,100,15.3,-0.5,0,0.0
+2010-01-02T17:00,-2.4,0.00,1016.6,89,13.9,-0.5,0,0.0
+2010-01-02T18:00,-3.2,0.00,1017.4,88,12.4,-0.5,0,0.0
+2010-01-02T19:00,-4.4,0.00,1018.0,97,11.2,-0.5,0,0.0
+2010-01-02T20:00,-5.1,0.00,1018.6,85,10.8,-0.5,0,0.0
+2010-01-02T21:00,-5.7,0.00,1018.8,92,10.9,-0.5,0,0.0
+2010-01-02T22:00,-5.7,0.00,1019.1,100,9.2,-0.5,0,0.0
+2010-01-02T23:00,-5.6,0.00,1019.4,100,7.3,-0.5,0,0.0
+----
+
+Un tel fichier est disponible peut être construit sur le site https://open-meteo.com.
+Le fichier ci-dessus a été téléchargé à l'URL https://archive-api.open-meteo.com/v1/archive?latitude=52.52&longitude=13.41&start_date=2010-01-01&end_date=2010-01-02&hourly=temperature_2m,rain,pressure_msl,cloud_cover,wind_speed_10m,soil_temperature_0_to_7cm,is_day,direct_normal_irradiance_instant&format=csv
+Customisation possible avec https://open-meteo.com/en/docs/historical-weather-api#start_date=2010-01-01&end_date=2010-01-02&hourly=temperature_2m,rain,pressure_msl,cloud_cover,wind_speed_10m,soil_temperature_0_to_7cm,is_day,direct_normal_irradiance_instant
+
+10 ans de données =~ 5 MiB
+
+== Partie 3
+
+Faire fonctionner le programme `CsvReader` pour n'importe quelle taille de fichier avec moins de 4 Mo de mémoire.
+
+* ✔️ Avec un gros jeu de données (> 4 Mo ), exécuter votre programme en ajoutant le flag de JVM `-Xmx4M` afin de limiter artificiellement la mémoire
