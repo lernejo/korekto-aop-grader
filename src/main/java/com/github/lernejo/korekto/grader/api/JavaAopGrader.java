@@ -1,6 +1,7 @@
 package com.github.lernejo.korekto.grader.api;
 
 import com.github.lernejo.korekto.grader.api.parts.Part1Grader;
+import com.github.lernejo.korekto.grader.api.parts.Part2Grader;
 import com.github.lernejo.korekto.toolkit.Grader;
 import com.github.lernejo.korekto.toolkit.GradingConfiguration;
 import com.github.lernejo.korekto.toolkit.PartGrader;
@@ -28,6 +29,7 @@ public class JavaAopGrader implements Grader<LaunchingContext> {
                 "Compilation & Tests",
                 4.0D),
             new Part1Grader("Part 1 - Retry dynamic proxy", 6.0),
+            new Part2Grader("Part 2 - Spring Aspect", 12.0D),
             new JacocoCoveragePartGrader<>("Code Coverage", 20.0D, 1.0D)
         );
     }

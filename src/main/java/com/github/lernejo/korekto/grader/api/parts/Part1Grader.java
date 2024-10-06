@@ -62,13 +62,13 @@ public record Part1Grader(String name, Double maxGrade) implements PartGrader<La
         ClassLoader mavenClassLoader = context.getMavenMainClassloader();
         ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(mavenClassLoader, false, Map.of(), ByteArrayClassLoader.PersistenceHandler.MANIFEST);
 
-        TypeSupplier typeSupplier = TypeSupplier.errorTester();
+        var typeSupplier = TypeSupplier.errorTester();
 
-        Optional<TypeSupplier.Type> potentialType = typeSupplier.supply(context, byteArrayClassLoader);
-        if (potentialType.isEmpty()) {
-            return result(List.of("Missing annotation `fr.lernejo.aop.Retry`, or its structure is invalid"), 0.0D);
+        Result<TypeSupplier.ErrorTesterType, String> potentialType = typeSupplier.supply(context, byteArrayClassLoader);
+        if (!potentialType.isOk()) {
+            return result(List.of(potentialType.err()), 0.0D);
         }
-        TypeSupplier.Type type = potentialType.get();
+        TypeSupplier.ErrorTesterType type = potentialType.value();
         Optional<Class<?>> potentialRetryableFactoryClass = getRetryableFactoryClass(byteArrayClassLoader);
         if (potentialRetryableFactoryClass.isEmpty()) {
             return result(List.of("Missing class `fr.lernejo.aop.RetryableFactory`"), 0.0D);
