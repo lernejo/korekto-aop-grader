@@ -56,98 +56,33 @@ Le but étant de créer une instance qui supportera un certain nombre d'erreur p
 
 
 
-== Partie 2
+== Partie 2 - Spring AOP
 
-Lire un fichier de données au format CSV, et réaliser un calcul simple.
+Créer un aspect permettant d'enregistrer le nombre d'appels des méthodes publiques.
 
-* Créer une nouvelle classe `fr.lernejo.file.CsvReader`
-* Créer une fonction `main` de telle sorte que :
-** Le programme prent ces paramètres :
-*** Un chemin vers un fichier (CSV)
-*** Une date de début au format `YYYY-MM-dd` (inclue)
-*** Une date de fin (exclue)
-*** Un nom de métrique parmi
-**** `temperature_2m` pour température (2ᵉ colonne)
-**** `pressure_msl` pour la pression (4ᵉ colonne)
-**** `wind_speed_10m` pour la vitesse du vent (6ᵉ colonne)
-**** `direct_normal_irradiance_instant` pour l'irradiance (9ᵉ colonne)
-*** Un sélecteur : `NIGHT` ou `DAY`
-*** Un type d'agrégation : `SUM`, `AVG`, `MIN`, `MAX`
-** Le programme affiche la valeur calculée suivie de son unité et sort
-
-Le fichier CSV en entrée sera toujours structuré de la même manière à savoir :
-
-* 3 lignes de préambule
-* 1 ligne d'entêtes (avec nom des métriques et unités)
-* N lignes de données
-* Les colonnes seront toujours les mêmes, et dans le même ordre.
-
-Exemple de fichier CSV :
-
-[source,csv]
+* Créer une classe publique `fr.lernejo.aop.InvocationTracker`
+** cette classe aura (au moins) deux méthodes publiques :
+[source,java]
 ----
-latitude,longitude,elevation,utc_offset_seconds,timezone,timezone_abbreviation
-52.54833,13.407822,38.0,0,GMT,GMT
+public static List<String> detectedMethods() {
+    // returns the list of recorded methods
+}
 
-time,temperature_2m (°C),rain (mm),pressure_msl (hPa),cloud_cover (%),wind_speed_10m (km/h),soil_temperature_0_to_7cm (°C),is_day (),direct_normal_irradiance_instant (W/m²)
-2010-01-01T00:00,-2.6,0.00,996.9,100,16.0,-0.6,0,0.0
-2010-01-01T01:00,-2.7,0.00,996.4,100,16.3,-0.6,0,0.0
-2010-01-01T02:00,-2.7,0.00,996.2,100,16.3,-0.6,0,0.0
-2010-01-01T03:00,-2.7,0.00,996.1,100,15.4,-0.6,0,0.0
-2010-01-01T04:00,-2.7,0.00,996.0,100,14.8,-0.6,0,0.0
-2010-01-01T05:00,-2.7,0.00,996.1,100,14.8,-0.6,0,0.0
-2010-01-01T06:00,-2.8,0.00,996.1,100,15.0,-0.6,0,0.0
-2010-01-01T07:00,-2.7,0.00,996.3,100,14.3,-0.6,0,0.0
-2010-01-01T08:00,-2.7,0.00,996.7,100,13.8,-0.6,1,0.0
-2010-01-01T09:00,-2.4,0.00,997.2,100,13.7,-0.6,1,8.5
-2010-01-01T10:00,-2.2,0.00,997.2,100,13.2,-0.6,1,20.4
-2010-01-01T11:00,-2.0,0.00,997.3,100,13.8,-0.6,1,50.0
-2010-01-01T12:00,-1.7,0.00,997.6,100,14.0,-0.6,1,44.7
-2010-01-01T13:00,-1.6,0.00,997.6,100,14.3,-0.6,1,27.9
-2010-01-01T14:00,-1.7,0.00,998.1,100,12.8,-0.6,1,33.9
-2010-01-01T15:00,-2.1,0.00,999.1,100,10.5,-0.6,1,0.0
-2010-01-01T16:00,-2.5,0.00,999.6,100,10.6,-0.6,0,0.0
-2010-01-01T17:00,-2.8,0.00,999.9,100,10.8,-0.6,0,0.0
-2010-01-01T18:00,-3.2,0.00,1000.4,100,10.3,-0.6,0,0.0
-2010-01-01T19:00,-2.9,0.00,1001.1,100,10.5,-0.6,0,0.0
-2010-01-01T20:00,-3.0,0.00,1001.8,100,10.0,-0.6,0,0.0
-2010-01-01T21:00,-2.9,0.00,1002.3,100,9.5,-0.6,0,0.0
-2010-01-01T22:00,-2.9,0.00,1002.9,100,11.0,-0.5,0,0.0
-2010-01-01T23:00,-2.9,0.00,1003.4,100,8.7,-0.5,0,0.0
-2010-01-02T00:00,-3.0,0.00,1004.0,100,8.3,-0.5,0,0.0
-2010-01-02T01:00,-3.2,0.00,1004.5,100,9.1,-0.5,0,0.0
-2010-01-02T02:00,-3.4,0.00,1005.2,100,10.1,-0.5,0,0.0
-2010-01-02T03:00,-3.5,0.00,1005.6,93,11.2,-0.5,0,0.0
-2010-01-02T04:00,-3.7,0.00,1006.2,94,11.2,-0.5,0,0.0
-2010-01-02T05:00,-3.8,0.00,1007.2,99,10.9,-0.5,0,0.0
-2010-01-02T06:00,-3.8,0.00,1008.0,97,10.0,-0.5,0,0.0
-2010-01-02T07:00,-3.6,0.00,1008.9,72,10.0,-0.5,0,0.0
-2010-01-02T08:00,-3.6,0.00,1009.8,62,10.5,-0.5,1,0.0
-2010-01-02T09:00,-3.2,0.00,1010.6,64,11.0,-0.5,1,16.9
-2010-01-02T10:00,-2.7,0.00,1011.4,92,11.6,-0.5,1,25.4
-2010-01-02T11:00,-1.9,0.00,1012.0,100,10.9,-0.5,1,82.9
-2010-01-02T12:00,-1.4,0.00,1012.7,100,11.2,-0.5,1,84.7
-2010-01-02T13:00,-1.2,0.00,1013.5,100,14.3,-0.5,1,69.3
-2010-01-02T14:00,-1.4,0.00,1014.1,100,15.8,-0.5,1,73.5
-2010-01-02T15:00,-1.9,0.00,1015.2,93,15.0,-0.5,1,0.0
-2010-01-02T16:00,-2.0,0.00,1016.0,100,15.3,-0.5,0,0.0
-2010-01-02T17:00,-2.4,0.00,1016.6,89,13.9,-0.5,0,0.0
-2010-01-02T18:00,-3.2,0.00,1017.4,88,12.4,-0.5,0,0.0
-2010-01-02T19:00,-4.4,0.00,1018.0,97,11.2,-0.5,0,0.0
-2010-01-02T20:00,-5.1,0.00,1018.6,85,10.8,-0.5,0,0.0
-2010-01-02T21:00,-5.7,0.00,1018.8,92,10.9,-0.5,0,0.0
-2010-01-02T22:00,-5.7,0.00,1019.1,100,9.2,-0.5,0,0.0
-2010-01-02T23:00,-5.6,0.00,1019.4,100,7.3,-0.5,0,0.0
+/**
+ * @param methodQualifiedName of the format packageName.className#methodName, example: {@code fr.lernejo.aop.ServiceA#doSomething}
+ */
+public static long getInvocationCount(String methodQualifiedName) {
+    // returns the number of invocation of the given method, 0 if the method is not known
+}
 ----
 
-Un tel fichier est disponible peut être construit sur le site https://open-meteo.com.
-Le fichier ci-dessus a été téléchargé à l'URL https://archive-api.open-meteo.com/v1/archive?latitude=52.52&longitude=13.41&start_date=2010-01-01&end_date=2010-01-02&hourly=temperature_2m,rain,pressure_msl,cloud_cover,wind_speed_10m,soil_temperature_0_to_7cm,is_day,direct_normal_irradiance_instant&format=csv
-Customisation possible avec https://open-meteo.com/en/docs/historical-weather-api#start_date=2010-01-01&end_date=2010-01-02&hourly=temperature_2m,rain,pressure_msl,cloud_cover,wind_speed_10m,soil_temperature_0_to_7cm,is_day,direct_normal_irradiance_instant
+* Créer une classe publique `fr.lernejo.aop.CountingAspect`
+** Cette classe doit être annotée avec `org.aspectj.lang.annotation.Aspect`
+** Cette classe doit définir un https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html[pointcut] (`@Pointcut`) ciblant toutes les methodes publiques
+** Cette classe doit définir un https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html[advice] de type `@After` qui incrémentera le compteur d'invocation
+* Le lien entre ces deux classes se fera via une méthode statique
+* Tester le bon fonctionnement de cet aspect demandera :
+** Une https://docs.spring.io/spring-framework/reference/core/beans/java/composing-configuration-classes.html[configuration] Spring
+** Des beans Spring ayant des méthodes publiques
+** D'utiliser `org.springframework.context.annotation.AnnotationConfigApplicationContext` afin de créer un contexte utilisant la configuration de test préalablement créée et de récupérer les beans afin d'invoquer leurs méthodes publiques
 
-10 ans de données =~ 5 MiB
-
-== Partie 3
-
-Faire fonctionner le programme `CsvReader` pour n'importe quelle taille de fichier avec moins de 4 Mo de mémoire.
-
-* ✔️ Avec un gros jeu de données (> 4 Mo ), exécuter votre programme en ajoutant le flag de JVM `-Xmx4M` afin de limiter artificiellement la mémoire
