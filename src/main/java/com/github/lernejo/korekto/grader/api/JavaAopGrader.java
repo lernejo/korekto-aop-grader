@@ -22,6 +22,7 @@ public class JavaAopGrader implements Grader<LaunchingContext> {
         return new LaunchingContext(configuration);
     }
 
+    @Override
     public Collection<PartGrader<LaunchingContext>> graders() {
         return List.of(
             new MavenCompileAndTestPartGrader<>(
