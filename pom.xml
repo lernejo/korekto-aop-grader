@@ -24,7 +24,7 @@
         <maven-resolver.version>1.9.23</maven-resolver.version>
         <byte-buddy.version>1.17.5</byte-buddy.version>
 
-        <junit.version>5.13.0</junit.version>
+        <junit.version>5.13.1</junit.version>
         <assertj.version>3.27.3</assertj.version>
 
         <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
