@@ -20,7 +20,7 @@
         <korekto-toolkit.version>2.0.2</korekto-toolkit.version>
 
         <logback-classic.version>1.5.18</logback-classic.version>
-        <maven.version>3.9.10</maven.version>
+        <maven.version>3.9.11</maven.version>
         <maven-resolver.version>1.9.24</maven-resolver.version>
         <byte-buddy.version>1.17.6</byte-buddy.version>
 
