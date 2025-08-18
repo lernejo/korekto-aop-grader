@@ -22,7 +22,7 @@
         <logback-classic.version>1.5.18</logback-classic.version>
         <maven.version>3.9.11</maven.version>
         <maven-resolver.version>1.9.24</maven-resolver.version>
-        <byte-buddy.version>1.17.6</byte-buddy.version>
+        <byte-buddy.version>1.17.7</byte-buddy.version>
 
         <junit.version>5.13.4</junit.version>
         <assertj.version>3.27.4</assertj.version>
